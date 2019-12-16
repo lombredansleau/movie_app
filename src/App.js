@@ -1,35 +1,47 @@
 import React from 'react';
-import PropTypes from "prop-types";
+import axios from 'axios';
+import Movie from './Movie';
 
-const ramens = [
-  {id : 1,name : "짜파게티",hotLv : "0",rating:3.9 },
-  {id : 2,name : "신라면",hotLv : "3",rating:4.7 },
-  {id : 3,name : "틈새라면",hotLv : "6",rating:4.3}
-];
+class App extends React.Component {
+  state = {
+    isLoading : true,
+    movies : []
+  }
 
-function Ramen({name, hotLv, rating}) {
-return (
-        <div> 
-          <h1>I Like {name} !! this food HotLevel is {hotLv}</h1>
-          <h3>{rating}/5.0</h3>
-        </div>
-       ); 
-}
+  getMovies = async () => {
+    const {
+      data: {
+        data: {
+          movies
+        }
+      }
+    } = await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
+    this.setState({movies, isLoading:false});
+  }
 
-Ramen.propTypes = {
-  name : PropTypes.string.isRequired,
-  hotLv : PropTypes.string.isRequired,
-  rating : PropTypes.number.isRequired
-};
+  componentDidMount() {
+    this.getMovies();
+  }
 
-function App() {
-  return  (
-            <div className="App" >
-              {ramens.map(
-                  ramen => <Ramen key={ramen.id} name={ramen.name} hotLv={ramen.hotLv} rating={ramen.rating} />
-              )}
-            </div>
-          );
+  render(){
+    const {isLoading, movies} = this.state;
+    return <div>
+              {isLoading 
+                ? "Loading..." 
+                : movies.map(movie => (
+                    <Movie 
+                      key={movie.id}
+                      id={movie.id} 
+                      year={movie.year} 
+                      title={movie.title} 
+                      summary={movie.summary} 
+                      poster={movie.medium_cover_image} 
+                    />
+                  )
+                )
+              }
+          </div>
+  }
 }
 
 export default App;
